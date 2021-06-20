@@ -1,18 +1,26 @@
+package Crypto;
+
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import lombok.Data;
+import lombok.Getter;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
+@Data
 public class HashPassword {
-  private static Logger logger;
+  private Logger logger = LogManager.getLogger(HashPassword.class);
+  @Getter
+  private byte[] salt;
 
-  public HashPassword(Logger logger) {
-    HashPassword.logger = logger;
+  public HashPassword() {
+    this.salt = generateSalt16Byte();
   }
 
-  public byte[] argon2Hash(String password, byte[] salt) {
-    logger.debug("Génération du hash argon2");
+  public byte[] argon2Hash(String password) {
+    logger.trace("Génération du hash argon2");
     Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
         .withVersion(Argon2Parameters.ARGON2_VERSION_13) // 19
         .withIterations(4)
@@ -27,7 +35,7 @@ public class HashPassword {
   }
 
   public byte[] generateSalt16Byte() {
-    logger.debug("Génération du sel");
+    logger.trace("Génération du sel");
     SecureRandom secureRandom = new SecureRandom();
     byte[] salt = new byte[16];
     secureRandom.nextBytes(salt);

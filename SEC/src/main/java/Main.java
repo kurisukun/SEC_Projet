@@ -1,9 +1,10 @@
-
-import com.google.gson.Gson;
+import ConfigFile.FileConfigManagement;
+import Crypto.AesCBC;
+import Crypto.HashPassword;
 import java.io.File;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.LogManager;
@@ -17,8 +18,9 @@ public class Main {
   public static void main(String[] args) {
     Logger logger = LogManager.getLogger(Main.class);
     logger.debug("Début du Main");
-    final String pathName = "/dev/sdc3";
-    HashPassword hashArgon = new HashPassword(logger);
+    final String pathName = "/dev/sdb3";
+    HashPassword hashArgon = new HashPassword();
+    FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
 
     logger.debug("Vérification de l'existence de la partition");
     if (fileExists(logger, pathName)) {
@@ -26,36 +28,31 @@ public class Main {
     }
 
     String password = "secret password";
-    byte[] salt = {-107, -56, 76, -102, 66, 2, -35, 91, -125, -86, 16, 87, 29, 54, 4, -87};//hashArgon.generateSalt16Byte();
-    byte[] Bytekey = hashArgon.argon2Hash(password, salt);
+    byte[] Bytekey = hashArgon.argon2Hash(password);
     SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
     //int exitCode = new CommandLine(new Sec()).execute(args);
-    AesCBC aesCBC = new AesCBC(key, logger);
+    AesCBC aesCBC = new AesCBC(key);
 
-    writeConfigToFile(logger, salt, aesCBC);
+    fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
 
-    //logger.info("Chiffrement des données");
+    logger.info("Chiffrement des données");
 
     //logger.info("Déchiffrement des données");
   }
 
-  private static void writeConfigToFile(Logger logger, byte[] salt, AesCBC aesCBC) {
-    try {
-      // create book object
-      JsonConfigFile confFile = new JsonConfigFile(salt, aesCBC.getIv());
+  private void copyData(String srcPath, String dstPath, Logger logger) {
+    try (FileInputStream inputStream = new FileInputStream(srcPath);
+        FileOutputStream outputStream = new FileOutputStream(dstPath)) {
 
-      // create Gson instance
-      Gson gson = new Gson();
-      // create a writer
-      Writer writer = Files.newBufferedWriter(Paths.get("confFile.json"));
-
-      // convert book object to JSON file
-      gson.toJson(confFile, writer);
-
-      // close writer
-      writer.close();
-
-    } catch (Exception e) {
+      int bytesRead;
+      int offset = 0;
+      byte[] buffer = new byte[1024 * 1024 * 1024]; // lecture de 1Go
+      while ((bytesRead = inputStream.read(buffer, offset, buffer.length)) != -1) {
+        outputStream.write(buffer);
+      }
+      inputStream.close();
+      outputStream.close();
+    } catch (IOException e) {
       logger.error(e.getMessage());
     }
   }
