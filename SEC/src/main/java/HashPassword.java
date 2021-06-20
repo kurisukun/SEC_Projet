@@ -4,11 +4,11 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
-public class hashPassword {
+public class HashPassword {
   private static Logger logger;
 
-  public hashPassword(Logger logger) {
-    hashPassword.logger = logger;
+  public HashPassword(Logger logger) {
+    HashPassword.logger = logger;
   }
 
   public byte[] argon2Hash(String password, byte[] salt) {
@@ -21,7 +21,7 @@ public class hashPassword {
         .withSalt(salt);
     Argon2BytesGenerator gen = new Argon2BytesGenerator();
     gen.init(builder.build());
-    byte[] key = new byte[64];
+    byte[] key = new byte[32];
     gen.generateBytes(password.getBytes(StandardCharsets.UTF_8), key, 0, key.length);
     return key;
   }
