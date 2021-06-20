@@ -1,6 +1,7 @@
 import ConfigFile.FileConfigManagement;
 import Crypto.AesCBC;
 import Crypto.HashPassword;
+import Validation.PasswordValidation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -27,7 +28,11 @@ public class Main {
       return;
     }
 
-    String password = "secret password";
+    String password = "simple password";
+    PasswordValidation passwordValidation = new PasswordValidation();
+    if (!passwordValidation.validatePasword(password)){
+      logger.warn("Tentative de mot de passe faible :" + password);
+    }
     byte[] Bytekey = hashArgon.argon2Hash(password);
     SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
     //int exitCode = new CommandLine(new Sec()).execute(args);
