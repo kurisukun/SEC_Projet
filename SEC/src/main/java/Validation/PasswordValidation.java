@@ -9,9 +9,11 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 public class PasswordValidation {
+
   private final Logger logger = LogManager.getLogger(PasswordValidation.class);
   private final Zxcvbn zxcvbn = new Zxcvbn();
-  public boolean validatePasword(String password){
+
+  public boolean validatePasword(String password) {
     logger.trace("validatePasword");
     Strength strength = zxcvbn.measure(password);
     ArrayList<Pattern> regexSet = new ArrayList<>();
@@ -21,15 +23,15 @@ public class PasswordValidation {
     regexSet.add(Pattern.compile("[!@#$%^&*]+", Pattern.CASE_INSENSITIVE));
     regexSet.add(Pattern.compile("[0-9]+", Pattern.CASE_INSENSITIVE));
     boolean isMatch = true;
-    for(Pattern p : regexSet){
+    for (Pattern p : regexSet) {
       isMatch &= p.matcher(password).find();
     }
 
-    if (strength.getScore() <= 2 || !isMatch){
+    if (strength.getScore() <= 2 || !isMatch) {
       System.out.println("Il semblerait que votre mot de passe n'est pas assez fort!");
-      System.out.println("Il pourrait être deviné en " + (int)strength.getGuesses() + " tentatives.");
+      System.out.println("Il pourrait être deviné en " + (int) strength.getGuesses() + " tentatives.");
       System.out.println("Voici quelques suggestions pour vous aider :");
-      for (String s:strength.getFeedback().getSuggestions()) {
+      for (String s : strength.getFeedback().getSuggestions()) {
         System.out.println(s);
       }
       return false;

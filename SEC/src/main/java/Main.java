@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.LogManager;
@@ -30,7 +32,7 @@ public class Main {
 
     String password = "simple password";
     PasswordValidation passwordValidation = new PasswordValidation();
-    if (!passwordValidation.validatePasword(password)){
+    if (!passwordValidation.validatePasword(password)) {
       logger.warn("Tentative de mot de passe faible :" + password);
     }
     byte[] Bytekey = hashArgon.argon2Hash(password);
@@ -41,6 +43,11 @@ public class Main {
     fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
 
     logger.info("Chiffrement des données");
+    try {
+      aesCBC.setDecryptMode("test.xlsx", "cipher");
+    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+      e.printStackTrace();
+    }
 
     //logger.info("Déchiffrement des données");
   }

@@ -11,6 +11,7 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 
 @Data
 public class HashPassword {
+
   private Logger logger = LogManager.getLogger(HashPassword.class);
   @Getter
   private byte[] salt;
