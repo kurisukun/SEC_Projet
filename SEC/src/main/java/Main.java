@@ -1,7 +1,3 @@
-import ConfigFile.FileConfigManagement;
-import Crypto.AesCBC;
-import Crypto.HashPassword;
-import Validation.PasswordValidation;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,67 +5,74 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Scanner;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
-import Yubikey.Resource;
+import ConfigFile.FileConfigManagement;
+import Crypto.AesCBC;
+import Crypto.HashPassword;
+import Validation.PasswordValidation;
+import YubikeyVerification.YubikeyVerification;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import picocli.CommandLine.Command;
 
-@Command(name = "keyDestroyer", mixinStandardHelpOptions = true, version = "keyDestroyer 0.0",
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+@Command(name = "Ango", mixinStandardHelpOptions = true, version = "Ango 0.1",
     description = "try to encrypt and decrypt your usb key")
 public class Main {
 
   public static void main(String[] args) {
-
     Logger logger = LogManager.getLogger(Main.class);
-    logger.debug("Début du Main");
+    logger.trace("main");
 
-    System.out.println("Put your finger on the yubikey: ");
+    System.out.println("### Welcome in the menu of KeyDestroyer ### \n");
+
+    System.out.print("Put your finger on the YubiKey to authentify: ");
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
 
-    Resource r = new Resource();
+    YubikeyVerification v = new YubikeyVerification();
 
     try {
-      if (r.login(otp))
-        System.out.println("Logged in!");
+      if (v.verify(otp)) {
+        System.out.println("You are authentified");
 
-      System.out.println("out");
+        /*
+        final String pathName = "/dev/sdb3";
+        HashPassword hashArgon = new HashPassword();
+        FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
+
+        logger.debug("Vérification de l'existence de la partition");
+        if (fileExists(logger, pathName)) {
+          return;
+        }
+
+        String password = "simple password";
+        PasswordValidation passwordValidation = new PasswordValidation();
+        if (!passwordValidation.validatePasword(password)) {
+          logger.warn("Tentative de mot de passe faible :" + password);
+        }
+        byte[] Bytekey = hashArgon.argon2Hash(password);
+        SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
+        //int exitCode = new CommandLine(new Sec()).execute(args);
+        AesCBC aesCBC = new AesCBC(key);
+
+        fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+
+        logger.info("Chiffrement des données");
+        try {
+          aesCBC.setDecryptMode("test.xlsx", "cipher");
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+          e.printStackTrace();
+        }*/
+
+      }
     }
     catch (Exception e){
       logger.error(e);
     }
-    /*
-    final String pathName = "/dev/sdb3";
-    HashPassword hashArgon = new HashPassword();
-    FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
 
-    logger.debug("Vérification de l'existence de la partition");
-    if (fileExists(logger, pathName)) {
-      return;
-    }
-
-    String password = "simple password";
-    PasswordValidation passwordValidation = new PasswordValidation();
-    if (!passwordValidation.validatePasword(password)) {
-      logger.warn("Tentative de mot de passe faible :" + password);
-    }
-    byte[] Bytekey = hashArgon.argon2Hash(password);
-    SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
-    //int exitCode = new CommandLine(new Sec()).execute(args);
-    AesCBC aesCBC = new AesCBC(key);
-
-    fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
-
-    logger.info("Chiffrement des données");
-    try {
-      aesCBC.setDecryptMode("test.xlsx", "cipher");
-    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-      e.printStackTrace();
-    }
-*/
 
     //logger.info("Déchiffrement des données");
   }
