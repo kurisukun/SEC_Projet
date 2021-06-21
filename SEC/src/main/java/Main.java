@@ -8,8 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.util.Scanner;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import Yubikey.Resource;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import picocli.CommandLine.Command;
@@ -19,8 +22,26 @@ import picocli.CommandLine.Command;
 public class Main {
 
   public static void main(String[] args) {
+
     Logger logger = LogManager.getLogger(Main.class);
     logger.debug("Début du Main");
+
+    System.out.println("Put your finger on the yubikey: ");
+    Scanner scan = new Scanner(System.in);
+    String otp = scan.next();
+
+    Resource r = new Resource();
+
+    try {
+      if (r.login(otp))
+        System.out.println("Logged in!");
+
+      System.out.println("out");
+    }
+    catch (Exception e){
+      logger.error(e);
+    }
+    /*
     final String pathName = "/dev/sdb3";
     HashPassword hashArgon = new HashPassword();
     FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
@@ -48,6 +69,7 @@ public class Main {
     } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
       e.printStackTrace();
     }
+*/
 
     //logger.info("Déchiffrement des données");
   }
