@@ -21,7 +21,7 @@ public class FileConfigManagement {
     try {
       JsonConfigFile confFile = new JsonConfigFile(salt, iv);
       Gson gson = new Gson();
-      Writer writer = Files.newBufferedWriter(Paths.get("confFile.json"));
+      Writer writer = Files.newBufferedWriter(Paths.get(fileName));
       gson.toJson(confFile, writer);
       writer.close();
     } catch (Exception e) {
@@ -33,7 +33,7 @@ public class FileConfigManagement {
     JsonConfigFile confFile = null;
     try {
       Gson gson = new Gson();
-      Reader reader = Files.newBufferedReader(Paths.get("confFile.json"));
+      Reader reader = Files.newBufferedReader(Paths.get(fileName));
       confFile = gson.fromJson(reader, JsonConfigFile.class);
       reader.close();
     } catch (Exception e) {
