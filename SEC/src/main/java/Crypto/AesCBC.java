@@ -17,6 +17,9 @@ import lombok.Getter;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+/*
+inspiré de https://www.baeldung.com/java-aes-encryption-decryption
+ */
 public class AesCBC {
 
   private static final String algorithm = "AES/CBC/PKCS5Padding";
@@ -40,23 +43,15 @@ public class AesCBC {
   public void setEncryptMode(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("setEncryptMode");
-    cipher.init(Cipher.DECRYPT_MODE, key, iv);
+    cipher.init(Cipher.ENCRYPT_MODE, key, iv);
     processData(srcPath, dstPath);
   }
 
   public void setDecryptMode(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("setDecryptMode");
-    cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+    cipher.init(Cipher.DECRYPT_MODE, key, iv);
     processData(srcPath, dstPath);
-  }
-
-  public void encrypt() {
-
-  }
-
-  public void decrypt() {
-
   }
 
   private void processData(String srcPath, String dstPath) {
@@ -65,9 +60,8 @@ public class AesCBC {
         FileOutputStream outputStream = new FileOutputStream(dstPath)) {
 
       int bytesRead;
-      int offset = 0;
-      byte[] buffer = new byte[1024 * 1024 * 1024]; // lecture de 1Go
-      while ((bytesRead = inputStream.read(buffer, offset, buffer.length)) != -1) {
+      byte[] buffer = new byte[1024 * 1024 * 1024];
+      while ((bytesRead = inputStream.read(buffer)) != -1) {
         byte[] output = cipher.update(buffer, 0, bytesRead);
         if (output != null) {
           outputStream.write(output);
@@ -77,8 +71,6 @@ public class AesCBC {
       if (outputBytes != null) {
         outputStream.write(outputBytes);
       }
-      inputStream.close();
-      outputStream.close();
     } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
       logger.error(e.getMessage());
     }

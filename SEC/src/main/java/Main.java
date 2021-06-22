@@ -11,6 +11,11 @@ import Crypto.AesCBC;
 import Crypto.HashPassword;
 import Validation.PasswordValidation;
 import YubikeyVerification.YubikeyVerification;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.io.FileUtils;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import picocli.CommandLine.Command;
@@ -24,7 +29,18 @@ public class Main {
 
   public static void main(String[] args) {
     Logger logger = LogManager.getLogger(Main.class);
+
     logger.trace("main");
+
+    final String pathName = "A2.tar.gz";
+    HashPassword hashArgon = new HashPassword();
+    FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
+
+    logger.debug("Vérification de l'existence de la partition");
+    if (fileExists(logger, pathName)) {
+      return;
+    }
+
 
     System.out.println("### Welcome in the menu of KeyDestroyer ### \n");
 
@@ -32,9 +48,14 @@ public class Main {
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
 
+
     YubikeyVerification v = new YubikeyVerification();
 
+    fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+    //fileConfigManagement.readConfigToFile();
+
     try {
+
       if (v.verify(otp)) {
         System.out.println("You are authentified");
 
@@ -74,21 +95,40 @@ public class Main {
     }
 
 
+      aesCBC.setEncryptMode(pathName, "cipher");
+    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      aesCBC.setDecryptMode("cipher", "unencrypted.tar.gz");
+    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+      return;
+    }
+    File f = new File(pathName);
+    File f1 = new File("unencrypted.tar.gz");
+    try {
+      if (FileUtils.contentEquals(f, f1)) {
+        logger.debug("fichier identique");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    //logger.debug("Copie sur le périphérique");
+
+    //logger.debug("Supression du fichier chiffré");
+
     //logger.info("Déchiffrement des données");
   }
 
-  private void copyData(String srcPath, String dstPath, Logger logger) {
+  private static void copyData(String srcPath, String dstPath, Logger logger) {
     try (FileInputStream inputStream = new FileInputStream(srcPath);
         FileOutputStream outputStream = new FileOutputStream(dstPath)) {
 
-      int bytesRead;
-      int offset = 0;
       byte[] buffer = new byte[1024 * 1024 * 1024]; // lecture de 1Go
-      while ((bytesRead = inputStream.read(buffer, offset, buffer.length)) != -1) {
+      while (inputStream.read(buffer, 0, buffer.length) != -1) {
         outputStream.write(buffer);
       }
-      inputStream.close();
-      outputStream.close();
     } catch (IOException e) {
       logger.error(e.getMessage());
     }
