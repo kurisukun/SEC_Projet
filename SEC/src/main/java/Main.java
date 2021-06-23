@@ -1,7 +1,5 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Scanner;
@@ -23,7 +21,7 @@ import picocli.CommandLine.Command;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-@Command(name = "Ango", mixinStandardHelpOptions = true, version = "Ango 0.1",
+@Command(name = "ango", mixinStandardHelpOptions = true, version = "ango 0.1",
     description = "try to encrypt and decrypt your usb key")
 public class Main {
 
@@ -38,20 +36,33 @@ public class Main {
 
     System.out.print("Put your finger on the YubiKey to authentify: ");
     Scanner scan = new Scanner(System.in);
-    String otp = scan.next();
+    //String otp = scan.next();
 
 
     YubikeyVerification v = new YubikeyVerification();
 
     //fileConfigManagement.readConfigToFile();
 
-    try {
-
-      if (v.verify(otp)) {
+      //if (v.verify(otp)) {
         System.out.println("You are authentified");
+      String[] list = {"testDirectory/test1", "TestDirectory/test2"};
+      for(String s: list) {
+        File f = new File(s);
+        System.out.println(s + " " + f.exists());
+      }
 
-        /*
-        final String pathName = "A2.tar.gz";
+      try {
+        ZipMaker.zipFiles(list);
+      }
+      catch (FileNotFoundException fileNotFoundException) {
+        fileNotFoundException.printStackTrace();
+      }
+      catch (IOException ioException) {
+        ioException.printStackTrace();
+      }
+
+      /*
+        final String pathName = "testDirectory";
         HashPassword hashArgon = new HashPassword();
         FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
 
@@ -102,11 +113,8 @@ public class Main {
 
 
          */
-      }
-    }
-    catch (Exception e){
-      logger.error(e);
-    }
+
+
   }
 
 
@@ -134,3 +142,5 @@ public class Main {
     return false;
   }
 }
+
+
