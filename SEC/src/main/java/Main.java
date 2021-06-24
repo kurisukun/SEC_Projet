@@ -59,6 +59,9 @@ public class Main {
         z.zipFile("testDirectory/subTestDirectory/subtest2", "singleFile.zip");
 
         z.zipFile("testDirectory", "directory.zip");
+
+        z.unzip("singleFile.zip", "unzippedSingleFile");
+        z.unzip("listOfFiles.zip", "unzippedListOfFiles");
       }
       catch (FileNotFoundException fileNotFoundException) {
         fileNotFoundException.printStackTrace();
