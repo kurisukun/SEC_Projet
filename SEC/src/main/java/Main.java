@@ -45,14 +45,20 @@ public class Main {
 
       //if (v.verify(otp)) {
         System.out.println("You are authentified");
-      String[] list = {"testDirectory/test1", "TestDirectory/test2"};
+      String[] list = {"testDirectory/test1", "TestDirectory/test2", "yolo", "testDirectory/test2", "testDirectory/subTestDirectory/subtest1", "testDirectory", "testDirectory/subTestDirectory"};
       for(String s: list) {
         File f = new File(s);
         System.out.println(s + " " + f.exists());
       }
 
       try {
-        ZipMaker.zipFiles(list);
+        ZipMaker z = new ZipMaker();
+        z.zipFiles(list, "listOfFiles.zip");
+
+        z.zipFile("test", "notWorking");
+        z.zipFile("testDirectory/subTestDirectory/subtest2", "singleFile.zip");
+
+        z.zipFile("testDirectory", "directory.zip");
       }
       catch (FileNotFoundException fileNotFoundException) {
         fileNotFoundException.printStackTrace();

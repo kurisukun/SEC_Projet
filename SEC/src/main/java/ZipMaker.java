@@ -3,6 +3,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -11,29 +12,83 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipMaker {
 
+  private void zipFileProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException{
+    FileInputStream fis = new FileInputStream(fileToZip);
+    ZipEntry zipEntry = new ZipEntry(fileName);
+    zipOut.putNextEntry(zipEntry);
+    byte[] bytes = new byte[1024];
+    int length;
+    while((length = fis.read(bytes)) >= 0) {
+      zipOut.write(bytes, 0, length);
+    }
+    fis.close();
+  }
 
-  public static void zipFiles(String[] fileList) throws FileNotFoundException, IOException{
-    List<String> srcFiles = Arrays.asList(fileList);
-    FileOutputStream fos = new FileOutputStream("multiCompressed.zip");
+  private void zipFolderProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws FileNotFoundException, IOException{
+    if (fileToZip.isHidden()) {
+      return;
+    }
+    if (fileToZip.isDirectory()) {
+      if (fileName.endsWith("/")) {
+        zipOut.putNextEntry(new ZipEntry(fileName));
+      } else {
+        zipOut.putNextEntry(new ZipEntry(fileName + "/"));
+      }
+      zipOut.closeEntry();
+      File[] children = fileToZip.listFiles();
+      for (File childFile : children) {
+        zipFolderProcess(childFile, fileName + "/" + childFile.getName(), zipOut);
+      }
+      return;
+    }
+
+    zipFileProcess(fileToZip, fileName, zipOut);
+  }
+
+  public void zipFile(String fileName, String zipName) throws FileNotFoundException, IOException{
+    File fileToZip = new File(fileName);
+    if (fileToZip.exists()) {
+    FileOutputStream fos = new FileOutputStream(zipName);
     ZipOutputStream zipOut = new ZipOutputStream(fos);
-    for (String srcFile : srcFiles) {
-      File fileToZip = new File(srcFile);
-      if (fileToZip.exists()) {
-        FileInputStream fis = new FileInputStream(fileToZip);
-        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-        zipOut.putNextEntry(zipEntry);
+      if(fileToZip.isDirectory()){
+        zipFolderProcess(fileToZip, fileToZip.getName(), zipOut);
+      }
+      else {
+        zipFileProcess(fileToZip, fileToZip.getName(), zipOut);
+      }
+      zipOut.close();
+      fos.close();
+    }
+  }
 
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-          zipOut.write(bytes, 0, length);
-        }
-        fis.close();
+
+  public void zipFiles(String[] fileList, String zipName) throws FileNotFoundException, IOException{
+    List<File> srcFiles = new ArrayList<File>();
+    for(String fileName: fileList){
+      File f = new File(fileName);
+      if(f.exists()){
+        srcFiles.add(f);
       }
     }
-    zipOut.close();
-    fos.close();
+
+    if (!srcFiles.isEmpty()) {
+      FileOutputStream fos = new FileOutputStream(zipName);
+      ZipOutputStream zipOut = new ZipOutputStream(fos);
+      for (File fileToZip : srcFiles) {
+
+        if (fileToZip.isDirectory()) {
+          zipFolderProcess(fileToZip, fileToZip.getName(), zipOut);
+        } else {
+          zipFileProcess(fileToZip, fileToZip.getName(), zipOut);
+        }
+      }
+      zipOut.close();
+      fos.close();
+    }
   }
+
+
+
   /*
   public void zip(){
     try {
