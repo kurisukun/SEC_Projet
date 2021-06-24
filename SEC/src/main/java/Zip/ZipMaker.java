@@ -1,3 +1,5 @@
+package Zip;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,7 +47,7 @@ public class ZipMaker {
     zipFileProcess(fileToZip, fileName, zipOut);
   }
 
-  public void zipFile(String fileName, String zipName) throws IOException{
+  public void zip(String fileName, String zipName) throws IOException{
     File fileToZip = new File(fileName);
     if (fileToZip.exists()) {
     FileOutputStream fos = new FileOutputStream(zipName);

@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Scanner;
@@ -10,10 +9,7 @@ import Crypto.HashPassword;
 import Validation.PasswordValidation;
 import YubikeyVerification.YubikeyVerification;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.io.FileUtils;
-
+import Zip.ZipMaker;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import picocli.CommandLine.Command;
@@ -55,75 +51,48 @@ public class Main {
         ZipMaker z = new ZipMaker();
         z.zipFiles(list, "listOfFiles.zip");
 
-        z.zipFile("test", "notWorking");
-        z.zipFile("testDirectory/subTestDirectory/subtest2", "singleFile.zip");
+        z.zip("test", "notWorking");
+        z.zip("testDirectory/subTestDirectory/subtest2", "singleFile.zip");
 
-        z.zipFile("testDirectory", "directory.zip");
+        z.zip("testDirectory", "directory.zip");
 
         z.unzip("singleFile.zip", "unzippedSingleFile");
         z.unzip("listOfFiles.zip", "unzippedListOfFiles");
-      }
-      catch (FileNotFoundException fileNotFoundException) {
-        fileNotFoundException.printStackTrace();
-      }
-      catch (IOException ioException) {
-        ioException.printStackTrace();
+      } catch (IOException e) {
+        logger.error(e);
       }
 
-      /*
-        final String pathName = "testDirectory";
-        HashPassword hashArgon = new HashPassword();
-        FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
+      final String pathName = "testDirectory";
+      HashPassword hashArgon = new HashPassword();
+      FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
+      if (fileExists(logger, pathName)) {
+        return;
+      }
+      String password = "simple password";
+      PasswordValidation passwordValidation = new PasswordValidation();
+      if (!passwordValidation.validatePasword(password)) {
+        logger.warn("Tentative de mot de passe faible :" + password);
+      }
+      byte[] Bytekey = hashArgon.argon2Hash(password);
+      SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
+      //int exitCode = new CommandLine(new Sec()).execute(args);
+      AesCBC aesCBC = new AesCBC(key);
 
-        logger.debug("Vérification de l'existence de la partition");
-        if (fileExists(logger, pathName)) {
-          return;
-        }
+      fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+      //fileConfigManagement.readConfigToFile();
 
-        String password = "simple password";
-        PasswordValidation passwordValidation = new PasswordValidation();
-        if (!passwordValidation.validatePasword(password)) {
-          logger.warn("Tentative de mot de passe faible :" + password);
-        }
-        byte[] Bytekey = hashArgon.argon2Hash(password);
-        SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
-        //int exitCode = new CommandLine(new Sec()).execute(args);
-        AesCBC aesCBC = new AesCBC(key);
+      logger.info("Chiffrement des données");
+      try {
+        aesCBC.encrypt(pathName, "cipher");
+      } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
+        e.printStackTrace();
+      }
 
-        fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
-        //fileConfigManagement.readConfigToFile();
-
-        logger.info("Chiffrement des données");
-        try {
-          aesCBC.setEncryptMode(pathName, "cipher");
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-          e.printStackTrace();
-        }
-
-        try {
-          aesCBC.setDecryptMode("cipher", "unencrypted.tar.gz");
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-          return;
-        }
-        File f = new File(pathName);
-        File f1 = new File("unencrypted.tar.gz");
-        try {
-          if (FileUtils.contentEquals(f, f1)) {
-            logger.debug("fichier identique");
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        //logger.debug("Copie sur le périphérique");
-
-        //logger.debug("Supression du fichier chiffré");
-
-        //logger.info("Déchiffrement des données");
-
-
-         */
-
-
+      try {
+        aesCBC.decrypt("cipher", "unencrypted");
+      } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+        return;
+      }
   }
 
 

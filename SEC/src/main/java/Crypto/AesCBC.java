@@ -15,6 +15,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+
+import Zip.ZipMaker;
 import lombok.Getter;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -42,24 +44,31 @@ public class AesCBC {
     }
   }
 
-  public void setEncryptMode(String srcPath, String dstPath)
+  public void encrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException, FileNotFoundException {
     logger.trace("setEncryptMode");
     cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+    ZipMaker z = new ZipMaker();
 
-
-    String[] fileList = fileList(srcPath);
-    for (String s: fileList){
-      System.out.println(s);
+    try{
+      z.zip(srcPath, "compressed.zip");
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    //processData(srcPath, dstPath);
+    processData("compressed.zip", dstPath);
   }
 
-  public void setDecryptMode(String srcPath, String dstPath)
+  public void decrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("setDecryptMode");
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
-    //processData(srcPath, dstPath);
+    processData(srcPath, dstPath);
+    ZipMaker z = new ZipMaker();
+    try{
+      z.unzip(srcPath, "uncompressed");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   private String[] fileList(String srcPath) throws FileNotFoundException {
