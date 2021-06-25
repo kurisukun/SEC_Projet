@@ -1,26 +1,17 @@
-import ConfigFile.FileConfigManagement;
 import Crypto.AesCBC;
 import Crypto.HashPassword;
-import Validation.PasswordValidation;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
 import org.junit.jupiter.api.Test;
-
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.util.Arrays;
-import java.util.List;
 
 
 public class TestEncryptAndDecrypt {
@@ -67,13 +58,6 @@ public class TestEncryptAndDecrypt {
     byte[] Bytekey = hashArgon.argon2Hash(password);
     SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
     AesCBC aesCBC = new AesCBC(key);
-
-    byte[] salt = hashArgon.getSalt();
-    IvParameterSpec iv = aesCBC.getIv();
-
-    //FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
-    //fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
-    //fileConfigManagement.readConfigToFile();
 
     try {
       aesCBC.encrypt(fileName, cipherFileName);

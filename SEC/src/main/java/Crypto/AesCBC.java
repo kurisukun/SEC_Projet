@@ -63,7 +63,7 @@ public class AesCBC {
    */
   public void encrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException, FileNotFoundException {
-    logger.trace("setEncryptMode");
+    logger.trace("encrypt");
     cipher.init(Cipher.ENCRYPT_MODE, key, iv);
     ZipMaker z = new ZipMaker();
 
@@ -74,7 +74,7 @@ public class AesCBC {
     }
     processData("compressed.zip", dstPath);
     if (!new File("compressed.zip").delete()){
-      logger.warn("Le fichier n'a pas pu être correctement supprimé.");
+      logger.warn("The file could not be deleted correctly");
     }
   }
 
@@ -87,7 +87,7 @@ public class AesCBC {
    */
   public void decrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
-    logger.trace("setDecryptMode");
+    logger.trace("decrypt");
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
     processData(srcPath, "decrypted");
     ZipMaker z = new ZipMaker();
@@ -97,7 +97,7 @@ public class AesCBC {
       logger.error(e.getMessage());
     }
     if (!new File(srcPath).delete()){
-      logger.warn("Le fichier n'a pas pu être correctement supprimé.");
+      logger.warn("The file could not be deleted correctly");
     }
   }
 
@@ -150,6 +150,7 @@ public class AesCBC {
    * @return IV for aes-cbc
    */
   private byte[] getIvBytes() {
+    logger.trace("getIvBytes");
     SecureRandom randomSecureRandom = new SecureRandom();
     byte[] iv = new byte[16];
     randomSecureRandom.nextBytes(iv);

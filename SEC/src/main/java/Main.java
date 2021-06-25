@@ -6,9 +6,7 @@ import Validation.PasswordValidation;
 import YubikeyVerification.YubikeyVerification;
 import Zip.ZipMaker;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -60,13 +58,13 @@ public class Main implements Runnable {
       // if (v.verify(otp)) {
       // verify that the given file exist
       if (fileExists(logger, srcPathName)) {
-        logger.error("file don't exist");
+        logger.error("File doesn't exist");
         return;
       }
 
       // validate the password
       if (!new PasswordValidation().validatePasword(password)) {
-        logger.warn("Tentative de mot de passe faible :" + password);
+        logger.warn("Use of weak password :" + password);
         return;
       }
 
@@ -81,10 +79,10 @@ public class Main implements Runnable {
           // write info for further actions
           new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
 
-          logger.trace("Chiffrement");
+          logger.trace("Encryption");
           aesCBC.encrypt(srcPathName, dstPathName);
         } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
-          logger.trace("déchiffrement");
+          logger.trace("Decryption");
           logger.error(e.getMessage());
         }
       } else if (decrypt) {

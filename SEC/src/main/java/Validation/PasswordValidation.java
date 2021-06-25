@@ -32,9 +32,9 @@ public class PasswordValidation {
     }
 
     if (strength.getScore() <= 2 || !isMatch) {
-      System.out.println("Il semblerait que votre mot de passe n'est pas assez fort!");
-      System.out.println("Il pourrait être deviné en " + (int) strength.getGuesses() + " tentatives.");
-      System.out.println("Voici quelques suggestions pour vous aider :");
+      System.out.println("It seems your password is not strong enough!");
+      System.out.println("It could be found in " + (int) strength.getGuesses() + " guesses");
+      System.out.println("Here are some suggestions to help you");
       for (String s : strength.getFeedback().getSuggestions()) {
         System.out.println(s);
       }
