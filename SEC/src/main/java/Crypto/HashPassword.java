@@ -20,6 +20,11 @@ public class HashPassword {
     this.salt = generateSalt16Byte();
   }
 
+  /**
+   * generate argon2 hash of a password
+   * @param password password to hash
+   * @return hash
+   */
   public byte[] argon2Hash(String password) {
     logger.trace("Génération du hash argon2");
     Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
@@ -35,11 +40,14 @@ public class HashPassword {
     return key;
   }
 
+  /**
+   * generate salt for argon2id
+   * @return salt
+   */
   public byte[] generateSalt16Byte() {
     logger.trace("Génération du sel");
-    SecureRandom secureRandom = new SecureRandom();
     byte[] salt = new byte[16];
-    secureRandom.nextBytes(salt);
+    new SecureRandom().nextBytes(salt);
     return salt;
   }
 }

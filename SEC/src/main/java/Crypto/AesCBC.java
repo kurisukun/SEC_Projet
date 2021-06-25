@@ -45,8 +45,8 @@ public class AesCBC {
 
   /**
    * encrypt srcPath and write it to dstPath
-   * @param srcPath
-   * @param dstPath
+   * @param srcPath file to encrypt
+   * @param dstPath encrypted file
    * @throws InvalidAlgorithmParameterException
    * @throws InvalidKeyException
    * @throws FileNotFoundException
@@ -60,11 +60,18 @@ public class AesCBC {
     try {
       z.zip(srcPath, "compressed.zip");
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
     processData("compressed.zip", dstPath);
   }
 
+  /**
+   * decrypt a file
+   * @param srcPath file to decrypt
+   * @param dstPath decrypted file
+   * @throws InvalidAlgorithmParameterException
+   * @throws InvalidKeyException
+   */
   public void decrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("setDecryptMode");
@@ -74,7 +81,7 @@ public class AesCBC {
     try {
       z.unzip(srcPath, "uncompressed");
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
   }
 
@@ -93,6 +100,11 @@ public class AesCBC {
     throw new FileNotFoundException();
   }
 
+  /**
+   * read from srcPath, make an operation, and write it to dstPath
+   * @param srcPath read srcPath
+   * @param dstPath write in dstPath
+   */
   private void processData(String srcPath, String dstPath) {
     logger.trace("From : " + srcPath + ", To : " + dstPath);
     try (FileInputStream inputStream = new FileInputStream(srcPath);
@@ -106,6 +118,8 @@ public class AesCBC {
           outputStream.write(output);
         }
       }
+
+      // write last 16 bits
       byte[] outputBytes = cipher.doFinal();
       if (outputBytes != null) {
         outputStream.write(outputBytes);
@@ -115,6 +129,10 @@ public class AesCBC {
     }
   }
 
+  /**
+   * generate random IV
+   * @return IV for aes-cbc
+   */
   private byte[] getIvBytes() {
     SecureRandom randomSecureRandom = new SecureRandom();
     byte[] iv = new byte[16];

@@ -12,6 +12,11 @@ public class PasswordValidation {
   private final Logger logger = LogManager.getLogger(PasswordValidation.class);
   private final Zxcvbn zxcvbn = new Zxcvbn();
 
+  /**
+   * test if a password is strong enough for our application
+   * @param password string to test
+   * @return true if strong enough
+   */
   public boolean validatePasword(String password) {
     logger.trace("validatePasword");
     Strength strength = zxcvbn.measure(password);
