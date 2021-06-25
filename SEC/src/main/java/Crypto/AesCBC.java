@@ -35,7 +35,17 @@ public class AesCBC {
 
   public AesCBC(SecretKey key) {
     this.key = key;
-    iv = new IvParameterSpec(getIvBytes());
+    this.iv = new IvParameterSpec(getIvBytes());
+    try {
+      cipher = Cipher.getInstance(algorithm);
+    } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+      logger.error(e.getMessage());
+    }
+  }
+
+  public AesCBC(SecretKey key, IvParameterSpec iv) {
+    this.key = key;
+    this.iv = iv;
     try {
       cipher = Cipher.getInstance(algorithm);
     } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
@@ -111,7 +121,7 @@ public class AesCBC {
         FileOutputStream outputStream = new FileOutputStream(dstPath)) {
 
       int bytesRead;
-      byte[] buffer = new byte[1024 * 1024 * 1024];
+      byte[] buffer = new byte[16];
       while ((bytesRead = inputStream.read(buffer)) != -1) {
         byte[] output = cipher.update(buffer, 0, bytesRead);
         if (output != null) {

@@ -1,6 +1,7 @@
 import ConfigFile.FileConfigManagement;
 import Crypto.AesCBC;
 import Crypto.HashPassword;
+import Entity.JsonConfigFile;
 import Validation.PasswordValidation;
 import YubikeyVerification.YubikeyVerification;
 import Zip.ZipMaker;
@@ -46,7 +47,7 @@ public class Main implements Runnable {
 
   public void run() {
     // verify that the path was given
-    if (srcPathName == null || dstPathName == null) {
+    if (srcPathName == null || dstPathName == null || password == null) {
       logger.error("file can't be null");
       return;
     }
@@ -56,41 +57,52 @@ public class Main implements Runnable {
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
     try {
-     // if (v.verify(otp)) {
-        // verify that the given file exist
-        if (fileExists(logger, srcPathName)) {
-          logger.error("file don't exist");
-          return;
+      // if (v.verify(otp)) {
+      // verify that the given file exist
+      if (fileExists(logger, srcPathName)) {
+        logger.error("file don't exist");
+        return;
+      }
+
+      // validate the password
+      if (!new PasswordValidation().validatePasword(password)) {
+        logger.warn("Tentative de mot de passe faible :" + password);
+        return;
+      }
+
+      if (encrypt) {
+        try {
+          // transform password into key
+          logger.trace("Hash argon2");
+          HashPassword hashArgon = new HashPassword();
+          byte[] Bytekey = hashArgon.argon2Hash(password);
+          AesCBC aesCBC = new AesCBC(new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES"));
+
+          // write info for further actions
+          new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+
+          logger.trace("Chiffrement");
+          aesCBC.encrypt(srcPathName, dstPathName);
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
+          logger.trace("déchiffrement");
+          logger.error(e.getMessage());
         }
+      } else if (decrypt) {
+        try {
+          JsonConfigFile jsonConfigFile = new FileConfigManagement("confFile.json").readConfigToFile();
 
-        // validate the password
-        if (!new PasswordValidation().validatePasword(password)) {
-          logger.warn("Tentative de mot de passe faible :" + password);
-          return;
+          // transform password into key
+          logger.trace("Hash argon2");
+          HashPassword hashArgon = new HashPassword(jsonConfigFile.getSalt());
+          byte[] Bytekey = hashArgon.argon2Hash(password);
+          AesCBC aesCBC = new AesCBC(new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES"), jsonConfigFile.getIv());
+
+          aesCBC.decrypt(srcPathName, dstPathName);
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+          logger.error(e.getMessage());
         }
-
-        // transform password into key
-        HashPassword hashArgon = new HashPassword();
-        byte[] Bytekey = new HashPassword().argon2Hash(password);
-        AesCBC aesCBC = new AesCBC(new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES"));
-
-        // write info for further actions
-        new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
-
-        if (encrypt) {
-          try {
-            aesCBC.encrypt(srcPathName, dstPathName);
-          } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
-            logger.error(e.getMessage());
-          }
-        } else if (decrypt) {
-          try {
-            aesCBC.decrypt(srcPathName, dstPathName);
-          } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-            logger.error(e.getMessage());
-          }
-        }
-   //   }
+      }
+      //   }
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
