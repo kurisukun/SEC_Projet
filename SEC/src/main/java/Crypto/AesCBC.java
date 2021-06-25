@@ -1,22 +1,21 @@
 package Crypto;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import Zip.ZipMaker;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-
-import Zip.ZipMaker;
 import lombok.Getter;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -50,7 +49,7 @@ public class AesCBC {
     cipher.init(Cipher.ENCRYPT_MODE, key, iv);
     ZipMaker z = new ZipMaker();
 
-    try{
+    try {
       z.zip(srcPath, "compressed.zip");
     } catch (IOException e) {
       e.printStackTrace();
@@ -64,7 +63,7 @@ public class AesCBC {
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
     processData(srcPath, dstPath);
     ZipMaker z = new ZipMaker();
-    try{
+    try {
       z.unzip(srcPath, "uncompressed");
     } catch (IOException e) {
       e.printStackTrace();
@@ -75,11 +74,10 @@ public class AesCBC {
     logger.trace("fileList");
     File f = new File(srcPath);
 
-    if(f.exists()) {
+    if (f.exists()) {
       if (f.isFile()) {
-        return new String[] {srcPath};
-      }
-      else if (f.isDirectory()) {
+        return new String[]{srcPath};
+      } else if (f.isDirectory()) {
         return f.list();
       }
     }
