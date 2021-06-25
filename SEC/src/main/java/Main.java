@@ -24,7 +24,7 @@ import picocli.CommandLine.Option;
     description = "try to encrypt and decrypt your usb key")
 public class Main implements Runnable {
 
-  private static Logger logger = LogManager.getLogger(Main.class);
+  private static final Logger logger = LogManager.getLogger(Main.class);
 
   @Option(names = "-f", description = "file to encrypt ou decrypt")
   String file;
@@ -36,7 +36,7 @@ public class Main implements Runnable {
   boolean decrypt;
 
   @Option(names = "--help", usageHelp = true, description = "display this help and exit")
-  private boolean help = false;
+  private boolean help;
 
   public void run() {
     if (file == null) {
@@ -54,6 +54,7 @@ public class Main implements Runnable {
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
     System.exit(exitCode);
+
     logger.trace("main");
 
     System.out.println("### Welcome in the menu of KeyDestroyer ### \n");
@@ -120,20 +121,6 @@ public class Main implements Runnable {
       aesCBC.decrypt("cipher", "unencrypted");
     } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
       return;
-    }
-  }
-
-
-  private static void copyData(String srcPath, String dstPath, Logger logger) {
-    try (FileInputStream inputStream = new FileInputStream(srcPath);
-        FileOutputStream outputStream = new FileOutputStream(dstPath)) {
-
-      byte[] buffer = new byte[1024 * 1024 * 1024]; // lecture de 1Go
-      while (inputStream.read(buffer, 0, buffer.length) != -1) {
-        outputStream.write(buffer);
-      }
-    } catch (IOException e) {
-      logger.error(e.getMessage());
     }
   }
 
