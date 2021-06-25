@@ -86,10 +86,10 @@ public class AesCBC {
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("setDecryptMode");
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
-    processData(srcPath, dstPath);
+    processData(srcPath, "decrypted");
     ZipMaker z = new ZipMaker();
     try {
-      z.unzip(srcPath, "uncompressed");
+      z.unzip("decrypted", dstPath);
     } catch (IOException e) {
       logger.error(e.getMessage());
     }
