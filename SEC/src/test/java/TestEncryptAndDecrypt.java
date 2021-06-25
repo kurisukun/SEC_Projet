@@ -2,6 +2,7 @@ import ConfigFile.FileConfigManagement;
 import Crypto.AesCBC;
 import Crypto.HashPassword;
 import Validation.PasswordValidation;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -26,14 +27,16 @@ public class TestEncryptAndDecrypt {
 
   private static final Logger logger = LogManager.getLogger(TestEncryptAndDecrypt.class);
 
-  private static void initOneFile(File file) {
+  private void initOneFile(String fileName, String[] content) {
+    File file = new File(fileName);
     try {
       if (!file.exists()) {
         file.createNewFile();
       }
-      PrintWriter writer = new PrintWriter(file.getName(), "UTF-8");
-      writer.println("The first line");
-      writer.println("The second line");
+      PrintWriter writer = new PrintWriter(fileName, StandardCharsets.UTF_8);
+      for(String s: content) {
+        writer.println(s);
+      }
       writer.close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -41,16 +44,22 @@ public class TestEncryptAndDecrypt {
 
   }
 
-
+  private void initFolderWithFiles(String folderName, String[] content){
+    new File(folderName).mkdirs();
+    for(String s: content){
+      String[] contentFile = {"first line", "second line", "third line"};
+      initOneFile(folderName + "/" + s, contentFile);
+    }
+  }
 
   @Test
   public void testEncryptAndDecriptOneFile(){
     String fileName = "test1";
-    String cipherName = "testCipher";
+    String cipherFileName = "testCipher";
     String decryptedFileName = "testDecrypted";
 
-    File file = new File(fileName);
-    initOneFile(file);
+    String[] content = {"first line", "second line", "third line"};
+    initOneFile(fileName, content);
 
     HashPassword hashArgon = new HashPassword();
     String password = "passwordTestVeryComplicated_AndCryptoIsRigolo12345";
@@ -67,16 +76,52 @@ public class TestEncryptAndDecrypt {
     //fileConfigManagement.readConfigToFile();
 
     try {
-      aesCBC.encrypt(file.getPath(), cipherName);
-    } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
+      aesCBC.encrypt(fileName, cipherFileName);
+      File testCipher = new File(cipherFileName);
+      assert(testCipher.exists());
+
+      aesCBC.decrypt(cipherFileName, decryptedFileName);
+
+      File decryptedFile = new File(decryptedFileName);
+      assert(decryptedFile.exists());
+
+      assert(FileUtils.contentEquals(new File(fileName), decryptedFile));
+    } catch (InvalidAlgorithmParameterException | InvalidKeyException | IOException e) {
       logger.error(e.getMessage());
     }
-    File testCipher = new File(cipherName);
-    assert(testCipher.exists());
+  }
+
+  @Test
+  public void testEncryptAndDecryptFolder(){
+    String folderName = "testFolder";
+    String cipherFolderName = "testCipher";
+    String decryptedFolderName = "testDecrypted";
+
+    String[] content = {"test1", "test2", "test3"};
+    initFolderWithFiles(folderName, content);
+
+    HashPassword hashArgon = new HashPassword();
+    String password = "passwordTestVeryComplicated_AndCryptoIsRigolo12345";
+
+    byte[] Bytekey = hashArgon.argon2Hash(password);
+    SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
+    AesCBC aesCBC = new AesCBC(key);
 
     try {
-      aesCBC.decrypt(cipherName, decryptedFileName);
-    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+      aesCBC.encrypt(folderName, cipherFolderName);
+      File testCipher = new File(cipherFolderName);
+      assert(testCipher.exists());
+
+      aesCBC.decrypt(cipherFolderName, decryptedFolderName);
+
+      File decryptedFolder = new File(decryptedFolderName);
+      assert(decryptedFolder.exists());
+
+      for(String s: content){
+        String suffix = folderName + "/" + s;
+        assert(FileUtils.contentEquals(new File(suffix), new File(decryptedFolderName + "/"+ suffix)));
+      }
+    } catch (InvalidAlgorithmParameterException | InvalidKeyException | IOException e) {
       logger.error(e.getMessage());
     }
   }
