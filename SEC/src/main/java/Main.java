@@ -26,8 +26,11 @@ public class Main implements Runnable {
 
   private static final Logger logger = LogManager.getLogger(Main.class);
 
-  @Option(names = "-f", description = "file to encrypt ou decrypt")
-  private String pathName;
+  @Option(names = "--srcPath", description = "file to encrypt ou decrypt")
+  private String srcPathName;
+
+  @Option(names = "--dstPath", description = "Destination of result")
+  private String dstPathName;
 
   @Option(names = "-p", description = "Passord to encrypt or decrypt file")
   private String password;
@@ -43,7 +46,7 @@ public class Main implements Runnable {
 
   public void run() {
     // verify that the path was given
-    if (pathName == null) {
+    if (srcPathName == null || dstPathName == null) {
       logger.error("file can't be null");
       return;
     }
@@ -53,9 +56,9 @@ public class Main implements Runnable {
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
     try {
-      if (v.verify(otp)) {
+     // if (v.verify(otp)) {
         // verify that the given file exist
-        if (fileExists(logger, pathName)) {
+        if (fileExists(logger, srcPathName)) {
           logger.error("file don't exist");
           return;
         }
@@ -75,21 +78,19 @@ public class Main implements Runnable {
         new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
 
         if (encrypt) {
-          System.out.println("encrypt");
           try {
-            aesCBC.encrypt(pathName, "cipher");
+            aesCBC.encrypt(srcPathName, dstPathName);
           } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
             logger.error(e.getMessage());
           }
         } else if (decrypt) {
-          System.out.println("decrypt");
           try {
-            aesCBC.decrypt(pathName, "unencrypted");
+            aesCBC.decrypt(srcPathName, dstPathName);
           } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
             logger.error(e.getMessage());
           }
         }
-      }
+   //   }
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
