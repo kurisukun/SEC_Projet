@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -14,19 +13,19 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipMaker {
 
-  private void zipFileProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException{
+  private void zipFileProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
     FileInputStream fis = new FileInputStream(fileToZip);
     ZipEntry zipEntry = new ZipEntry(fileName);
     zipOut.putNextEntry(zipEntry);
     byte[] bytes = new byte[1024];
     int length;
-    while((length = fis.read(bytes)) >= 0) {
+    while ((length = fis.read(bytes)) >= 0) {
       zipOut.write(bytes, 0, length);
     }
     fis.close();
   }
 
-  private void zipFolderProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException{
+  private void zipFolderProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
     if (fileToZip.isHidden()) {
       return;
     }
@@ -47,28 +46,28 @@ public class ZipMaker {
     zipFileProcess(fileToZip, fileName, zipOut);
   }
 
-  public void zip(String fileName, String zipName) throws IOException{
+  public void zip(String fileName, String zipName) throws IOException {
     File fileToZip = new File(fileName);
     if (fileToZip.exists()) {
-    FileOutputStream fos = new FileOutputStream(zipName);
-    ZipOutputStream zipOut = new ZipOutputStream(fos);
-      if(fileToZip.isDirectory()){
+      FileOutputStream fos = new FileOutputStream(zipName);
+      ZipOutputStream zipOut = new ZipOutputStream(fos);
+      if (fileToZip.isDirectory()) {
         zipFolderProcess(fileToZip, fileToZip.getName(), zipOut);
-      }
-      else {
+      } else {
         zipFileProcess(fileToZip, fileToZip.getName(), zipOut);
       }
       zipOut.close();
       fos.close();
+    }else{
+      throw new FileNotFoundException();
     }
   }
 
-
-  public void zipFiles(String[] fileList, String zipName) throws IOException{
-    List<File> srcFiles = new ArrayList<File>();
-    for(String fileName: fileList){
+  public void zipFiles(String[] fileList, String zipName) throws IOException {
+    List<File> srcFiles = new ArrayList<>();
+    for (String fileName : fileList) {
       File f = new File(fileName);
-      if(f.exists()){
+      if (f.exists()) {
         srcFiles.add(f);
       }
     }
@@ -77,7 +76,6 @@ public class ZipMaker {
       FileOutputStream fos = new FileOutputStream(zipName);
       ZipOutputStream zipOut = new ZipOutputStream(fos);
       for (File fileToZip : srcFiles) {
-
         if (fileToZip.isDirectory()) {
           zipFolderProcess(fileToZip, fileToZip.getName(), zipOut);
         } else {
@@ -89,7 +87,7 @@ public class ZipMaker {
     }
   }
 
-  public void unzip(String zipName, String folderName) throws IOException{
+  public void unzip(String zipName, String folderName) throws IOException {
 
     File destDir = new File(folderName);
     byte[] buffer = new byte[1024];

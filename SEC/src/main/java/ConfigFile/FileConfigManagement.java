@@ -17,24 +17,32 @@ public class FileConfigManagement {
   private final Logger logger = LogManager.getLogger(FileConfigManagement.class);
   private final String fileName;
 
+  /**
+   * take crypto parameters and write it in file
+   *
+   * @param salt for argon2
+   * @param iv   IV for aes-cbc
+   */
   public void writeConfigToFile(byte[] salt, IvParameterSpec iv) {
     try {
-      JsonConfigFile confFile = new JsonConfigFile(salt, iv);
-      Gson gson = new Gson();
       Writer writer = Files.newBufferedWriter(Paths.get(fileName));
-      gson.toJson(confFile, writer);
+      new Gson().toJson(new JsonConfigFile(salt, iv), writer);
       writer.close();
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
   }
 
+  /**
+   * read Salt and IV from file
+   *
+   * @return crypto parameters
+   */
   public JsonConfigFile readConfigToFile() {
     JsonConfigFile confFile = null;
     try {
-      Gson gson = new Gson();
       Reader reader = Files.newBufferedReader(Paths.get(fileName));
-      confFile = gson.fromJson(reader, JsonConfigFile.class);
+      confFile = new Gson().fromJson(reader, JsonConfigFile.class);
       reader.close();
     } catch (Exception e) {
       logger.error(e.getMessage());

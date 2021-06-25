@@ -43,6 +43,14 @@ public class AesCBC {
     }
   }
 
+  /**
+   * encrypt srcPath and write it to dstPath
+   * @param srcPath
+   * @param dstPath
+   * @throws InvalidAlgorithmParameterException
+   * @throws InvalidKeyException
+   * @throws FileNotFoundException
+   */
   public void encrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException, FileNotFoundException {
     logger.trace("setEncryptMode");

@@ -27,27 +27,71 @@ public class Main implements Runnable {
   private static final Logger logger = LogManager.getLogger(Main.class);
 
   @Option(names = "-f", description = "file to encrypt ou decrypt")
-  String file;
+  private String pathName;
+
+  @Option(names = "-p", description = "Passord to encrypt or decrypt file")
+  private String password;
 
   @Option(names = "-e", description = "Encrypt file")
-  boolean encrypt;
+  private boolean encrypt;
 
   @Option(names = "-d", description = "Decrypt file")
-  boolean decrypt;
+  private boolean decrypt;
 
   @Option(names = "--help", usageHelp = true, description = "display this help and exit")
   private boolean help;
 
   public void run() {
-    if (file == null) {
+    // verify that the path was given
+    if (pathName == null) {
       logger.error("file can't be null");
       return;
     }
 
-    if (encrypt) {
-      System.out.println("encrypt");
-    } else if (decrypt) {
-      System.out.println("decrypt");
+    // verify yubikey
+    YubikeyVerification v = new YubikeyVerification();
+    Scanner scan = new Scanner(System.in);
+    String otp = scan.next();
+    try {
+      if (v.verify(otp)) {
+        // verify that the given file exist
+        if (fileExists(logger, pathName)) {
+          logger.error("file don't exist");
+          return;
+        }
+
+        // validate the password
+        if (!new PasswordValidation().validatePasword(password)) {
+          logger.warn("Tentative de mot de passe faible :" + password);
+          return;
+        }
+
+        // transform password into key
+        HashPassword hashArgon = new HashPassword();
+        byte[] Bytekey = new HashPassword().argon2Hash(password);
+        AesCBC aesCBC = new AesCBC(new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES"));
+
+        // write info for further actions
+        new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+
+        if (encrypt) {
+          System.out.println("encrypt");
+          try {
+            aesCBC.encrypt(pathName, "cipher");
+          } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
+            logger.error(e.getMessage());
+          }
+        } else if (decrypt) {
+          System.out.println("decrypt");
+          try {
+            aesCBC.decrypt(pathName, "unencrypted");
+          } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
+            logger.error(e.getMessage());
+          }
+        }
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage());
     }
   }
 
@@ -104,7 +148,6 @@ public class Main implements Runnable {
     }
     byte[] Bytekey = hashArgon.argon2Hash(password);
     SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
-    //int exitCode = new CommandLine(new Sec()).execute(args);
     AesCBC aesCBC = new AesCBC(key);
 
     fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
@@ -114,13 +157,13 @@ public class Main implements Runnable {
     try {
       aesCBC.encrypt(pathName, "cipher");
     } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error(e.getMessage());
     }
 
     try {
       aesCBC.decrypt("cipher", "unencrypted");
     } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-      return;
+      logger.error(e.getMessage());
     }
   }
 
