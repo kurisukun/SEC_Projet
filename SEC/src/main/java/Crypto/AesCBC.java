@@ -73,6 +73,9 @@ public class AesCBC {
       logger.error(e.getMessage());
     }
     processData("compressed.zip", dstPath);
+    if (!new File("compressed.zip").delete()){
+      logger.warn("Le fichier n'a pas pu être correctement supprimé.");
+    }
   }
 
   /**
@@ -92,6 +95,9 @@ public class AesCBC {
       z.unzip("decrypted", dstPath);
     } catch (IOException e) {
       logger.error(e.getMessage());
+    }
+    if (!new File(srcPath).delete()){
+      logger.warn("Le fichier n'a pas pu être correctement supprimé.");
     }
   }
 

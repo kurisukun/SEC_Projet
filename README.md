@@ -16,5 +16,10 @@ Nous avons pris Argon2 avec un paramétrage de type sensible, car nous avons con
 
 ### Fonctionnement 
 
+Nous commençons par vérifier l'utilisateur à l'aide de sa yubikey. Si c'est bon nous allons vérifié la difficulté de son mot de passe afin d'avoir une bonne base pour le hachage avec argon2. 
+
+Une fois cela fait, nous allons compressé le fichier ou le dossier que l'on veut traiter. Par la suite, nous allons lire par chunk de bytes, chiffrer et écrire le résultat dans un fichier annexe afin de garder une intégrité des données si le chiffrement venait à être interrompu. Le même processus est utilisé pour le déchiffrement.
+
 ## Problème rencontré
 
+Nous avons rencontré le problème suivant en voulant chiffrer une clé USB. Si nous voulons l'ouvrir comme fichier ("/dev/sdax"), nous devons prendre en compte que aes-cbc rajoute 16 octets de padding, ces derniers ne pourrons pas être écrit sur la clé. On peut éventuellement choisir l’option sans padding, mais cela implique que la clé doit être formatée avec une taille qui est multiple de 16. 
