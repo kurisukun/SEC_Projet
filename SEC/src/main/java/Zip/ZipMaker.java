@@ -1,5 +1,9 @@
 package Zip;
 
+import Crypto.AesCBC;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,7 +17,10 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipMaker {
 
+  private final Logger logger = LogManager.getLogger(ZipMaker.class);
+
   private void zipFileProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+    logger.trace("zipFileProcess");
     FileInputStream fis = new FileInputStream(fileToZip);
     ZipEntry zipEntry = new ZipEntry(fileName);
     zipOut.putNextEntry(zipEntry);
@@ -26,6 +33,7 @@ public class ZipMaker {
   }
 
   private void zipFolderProcess(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+    logger.trace("zipFolderProcess");
     if (fileToZip.isHidden()) {
       return;
     }
@@ -53,6 +61,7 @@ public class ZipMaker {
    * @throws IOException
    */
   public void zip(String fileName, String zipName) throws IOException {
+    logger.trace("zip");
     File fileToZip = new File(fileName);
     if (fileToZip.exists()) {
       FileOutputStream fos = new FileOutputStream(zipName);
@@ -67,6 +76,7 @@ public class ZipMaker {
     }else{
       throw new FileNotFoundException();
     }
+    logger.info("File " + fileName + "correctly zipped into archive " + zipName);
   }
 
   /**
@@ -97,6 +107,7 @@ public class ZipMaker {
       zipOut.close();
       fos.close();
     }
+    logger.info("File " + fileList.toString() + "correctly zipped into archive " + zipName);
   }
 
   /**
@@ -107,7 +118,7 @@ public class ZipMaker {
    * @throws IOException
    */
   public void unzip(String zipName, String folderName) throws IOException {
-
+    logger.trace("unzip");
     File destDir = new File(folderName);
     byte[] buffer = new byte[1024];
     ZipInputStream zis = new ZipInputStream(new FileInputStream(zipName));
@@ -137,6 +148,8 @@ public class ZipMaker {
     }
     zis.closeEntry();
     zis.close();
+
+    logger.info("Archive " + zipName + "correctly unzipped. Content added to folder " + folderName);
   }
 
   /**

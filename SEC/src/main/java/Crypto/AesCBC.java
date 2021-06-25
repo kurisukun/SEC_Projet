@@ -70,12 +70,14 @@ public class AesCBC {
     try {
       z.zip(srcPath, "compressed.zip");
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     processData("compressed.zip", dstPath);
+    logger.info("Encryption correctly done");
     if (!new File("compressed.zip").delete()){
       logger.warn("The file could not be deleted correctly");
     }
+    logger.info("Deletion of temporary file correctly done");
   }
 
   /**
@@ -90,15 +92,17 @@ public class AesCBC {
     logger.trace("decrypt");
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
     processData(srcPath, "decrypted");
+    logger.info("Decryption correctly done");
     ZipMaker z = new ZipMaker();
     try {
       z.unzip("decrypted", dstPath);
     } catch (IOException e) {
-      logger.error(e.getMessage());
+      logger.error(e);
     }
     if (!new File(srcPath).delete()){
       logger.warn("The file could not be deleted correctly");
     }
+    logger.info("Deletion of temporary file correctly done");
   }
 
   private String[] fileList(String srcPath) throws FileNotFoundException {

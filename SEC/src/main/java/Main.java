@@ -4,14 +4,11 @@ import Crypto.HashPassword;
 import Entity.JsonConfigFile;
 import Validation.PasswordValidation;
 import YubikeyVerification.YubikeyVerification;
-import Zip.ZipMaker;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Scanner;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -25,7 +22,7 @@ public class Main implements Runnable {
 
   private static final Logger logger = LogManager.getLogger(Main.class);
 
-  @Option(names = "--srcPath", description = "file to encrypt ou decrypt")
+  @Option(names = "--srcPath", description = "file to encrypt or decrypt")
   private String srcPathName;
 
   @Option(names = "--dstPath", description = "Destination of result")
@@ -52,10 +49,12 @@ public class Main implements Runnable {
 
     // verify yubikey
     YubikeyVerification v = new YubikeyVerification();
+    System.out.println("To use ango, you have to authenticate");
+    System.out.println("Please put your finger on your YubiKey to enter your One-time password");
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
     try {
-      // if (v.verify(otp)) {
+      if (v.verify(otp)) {
       // verify that the given file exist
       if (fileExists(logger, srcPathName)) {
         logger.error("File doesn't exist");
@@ -100,7 +99,7 @@ public class Main implements Runnable {
           logger.error(e.getMessage());
         }
       }
-      //   }
+      }
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
@@ -109,79 +108,12 @@ public class Main implements Runnable {
   public static void main(String[] args) {
     int exitCode = new CommandLine(new Main()).execute(args);
     System.exit(exitCode);
-
-    logger.trace("main");
-
-    System.out.println("### Welcome in the menu of KeyDestroyer ### \n");
-
-    System.out.print("Put your finger on the YubiKey to authentify: ");
-    Scanner scan = new Scanner(System.in);
-    //String otp = scan.next();
-
-    YubikeyVerification v = new YubikeyVerification();
-
-    //fileConfigManagement.readConfigToFile();
-
-    //if (v.verify(otp)) {
-    System.out.println("You are authentified");
-    String[] list = {"testDirectory/test1", "TestDirectory/test2", "yolo", "testDirectory/test2",
-        "testDirectory/subTestDirectory/subtest1", "testDirectory", "testDirectory/subTestDirectory"};
-    for (String s : list) {
-      File f = new File(s);
-      System.out.println(s + " " + f.exists());
-    }
-
-    try {
-      ZipMaker z = new ZipMaker();
-      z.zipFiles(list, "listOfFiles.zip");
-
-      z.zip("test", "notWorking");
-      z.zip("testDirectory/subTestDirectory/subtest2", "singleFile.zip");
-
-      z.zip("testDirectory", "directory.zip");
-
-      z.unzip("singleFile.zip", "unzippedSingleFile");
-      z.unzip("listOfFiles.zip", "unzippedListOfFiles");
-    } catch (IOException e) {
-      logger.error(e);
-    }
-
-    final String pathName = "testDirectory";
-    HashPassword hashArgon = new HashPassword();
-    FileConfigManagement fileConfigManagement = new FileConfigManagement("confFile.json");
-    if (fileExists(logger, pathName)) {
-      return;
-    }
-    String password = "simple password";
-    PasswordValidation passwordValidation = new PasswordValidation();
-    if (!passwordValidation.validatePasword(password)) {
-      logger.warn("Tentative de mot de passe faible :" + password);
-    }
-    byte[] Bytekey = hashArgon.argon2Hash(password);
-    SecretKey key = new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES");
-    AesCBC aesCBC = new AesCBC(key);
-
-    fileConfigManagement.writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
-    //fileConfigManagement.readConfigToFile();
-
-    logger.info("Chiffrement des données");
-    try {
-      aesCBC.encrypt(pathName, "cipher");
-    } catch (InvalidAlgorithmParameterException | InvalidKeyException | FileNotFoundException e) {
-      logger.error(e.getMessage());
-    }
-
-    try {
-      aesCBC.decrypt("cipher", "unencrypted");
-    } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
-      logger.error(e.getMessage());
-    }
   }
 
   private static boolean fileExists(Logger logger, String pathName) {
     File file = new File(pathName);
     if (!file.exists()) {
-      logger.error("Le fichier " + pathName + " n'existe pas!");
+      logger.error("File " + pathName + " does not exist!");
       return true;
     }
     return false;
