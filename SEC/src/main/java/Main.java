@@ -28,6 +28,9 @@ public class Main implements Runnable {
   @Option(names = "--dstPath", description = "Destination of result")
   private String dstPathName;
 
+  @Option(names = "--confFile", description = "Config file for decryption")
+  private String configFile;
+
   @Option(names = "-p", description = "Passord to encrypt or decrypt file")
   private String password;
 
@@ -42,7 +45,7 @@ public class Main implements Runnable {
 
   public void run() {
     // verify that the path was given
-    if (srcPathName == null || dstPathName == null || password == null) {
+    if (srcPathName == null || dstPathName == null || password == null || configFile == null) {
       logger.error("file can't be null");
       return;
     }
@@ -55,9 +58,15 @@ public class Main implements Runnable {
     String otp = scan.next();
     try {
       if (v.verify(otp)) {
-      // verify that the given file exist
-      if (fileExists(logger, srcPathName)) {
-        logger.error("File doesn't exist");
+      // verify that the given file to process exists
+      if (fileExists(srcPathName)) {
+        logger.error("File doesn't exist" + srcPathName);
+        return;
+      }
+
+      // verify that the given config file exists
+      if (fileExists(srcPathName)) {
+        logger.error("File doesn't exist" + srcPathName);
         return;
       }
 
@@ -76,7 +85,7 @@ public class Main implements Runnable {
           AesCBC aesCBC = new AesCBC(new SecretKeySpec(Bytekey, 0, Bytekey.length, "AES"));
 
           // write info for further actions
-          new FileConfigManagement("confFile.json").writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
+          new FileConfigManagement(configFile).writeConfigToFile(hashArgon.getSalt(), aesCBC.getIv());
 
           logger.trace("Encryption");
           aesCBC.encrypt(srcPathName, dstPathName);
@@ -86,8 +95,7 @@ public class Main implements Runnable {
         }
       } else if (decrypt) {
         try {
-          JsonConfigFile jsonConfigFile = new FileConfigManagement("confFile.json").readConfigToFile();
-
+          JsonConfigFile jsonConfigFile = new FileConfigManagement(configFile).readConfigToFile();
           // transform password into key
           logger.trace("Hash argon2");
           HashPassword hashArgon = new HashPassword(jsonConfigFile.getSalt());
@@ -99,7 +107,7 @@ public class Main implements Runnable {
           logger.error(e.getMessage());
         }
       }
-      }
+       }
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
@@ -110,13 +118,9 @@ public class Main implements Runnable {
     System.exit(exitCode);
   }
 
-  private static boolean fileExists(Logger logger, String pathName) {
+  private static boolean fileExists(String pathName) {
     File file = new File(pathName);
-    if (!file.exists()) {
-      logger.error("File " + pathName + " does not exist!");
-      return true;
-    }
-    return false;
+    return !file.exists();
   }
 }
 

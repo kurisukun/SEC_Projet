@@ -32,7 +32,7 @@ public class HashPassword {
     logger.trace("Génération du hash argon2");
     Argon2Parameters.Builder builder = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
         .withVersion(Argon2Parameters.ARGON2_VERSION_13) // 19
-        .withIterations(44) // environ 2 secondes
+        .withIterations(20) // environ 2 secondes
         .withMemoryAsKB(128 * 1024)
         .withParallelism(4)
         .withSalt(salt);
