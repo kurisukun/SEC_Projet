@@ -15,6 +15,12 @@ public class YubikeyVerification {
     private final YubicoClient client = YubicoClient.getClient(CLIENT_ID, API_KEY);
     private final Logger logger = LogManager.getLogger(YubikeyVerification.class);
 
+    /**
+     * Verifiea the given One-time password is valid depending on the API_KEY
+     * @param otp the One-time password entered by the user
+     * @return true if the authentication is done correctly, false othwerwise
+     * @throws Exception
+     */
     public boolean verify(String otp) throws Exception{
         logger.trace("verify");
 

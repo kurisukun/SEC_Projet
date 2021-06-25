@@ -46,6 +46,12 @@ public class ZipMaker {
     zipFileProcess(fileToZip, fileName, zipOut);
   }
 
+  /**
+   * Zip the given file/folder using his filename
+   * @param fileName the filename
+   * @param zipName the name of the zip archive
+   * @throws IOException
+   */
   public void zip(String fileName, String zipName) throws IOException {
     File fileToZip = new File(fileName);
     if (fileToZip.exists()) {
@@ -63,6 +69,12 @@ public class ZipMaker {
     }
   }
 
+  /**
+   * Zip the list of given files
+   * @param fileList the list containing all the filenames
+   * @param zipName the name of the zip archive
+   * @throws IOException
+   */
   public void zipFiles(String[] fileList, String zipName) throws IOException {
     List<File> srcFiles = new ArrayList<>();
     for (String fileName : fileList) {
@@ -87,6 +99,13 @@ public class ZipMaker {
     }
   }
 
+  /**
+   * Unzip the given zip archive into a folder. The content of the newly created folder depends on what the archive
+   * contains. The hierarchy of the folder is kept
+   * @param zipName
+   * @param folderName
+   * @throws IOException
+   */
   public void unzip(String zipName, String folderName) throws IOException {
 
     File destDir = new File(folderName);
@@ -120,6 +139,13 @@ public class ZipMaker {
     zis.close();
   }
 
+  /**
+   * Used to prevent zip slip vulnerability which permits an adversary to write files to the file system outside the target folder
+   * @param destinationDir the name of the destination folder
+   * @param zipEntry the entry to be unzipped
+   * @return the file which could have been unzipped
+   * @throws IOException
+   */
   private static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
     File destFile = new File(destinationDir, zipEntry.getName());
 
