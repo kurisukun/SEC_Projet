@@ -1,4 +1,4 @@
-# SEC Projet: Chiffrement authentifié avec une clé YubiKey
+# Ango: Chiffrement authentifié avec une clé YubiKey
 
 
 
