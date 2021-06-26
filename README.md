@@ -73,8 +73,7 @@ Une autre manière d'afficher l'aide est de lui passer l'option `--help` ou `-h`
 Imaginons que l'on souhaite chiffrer un fichier nommé **test**  qui contient le texte "test" et qui se trouve dans le même dossier que notre exécutable. 
 
 ```
-
-
+java -jar ango -e -p=CryptoIsRigolo_1234$ --srcPath="test" --dstPath="ciphertext" --confFile="confFile"
 ```
 
 On voit ici que l'on passe à Java le nom du jar **ango**, que l'on passe l'option `-e`  pour effectuer un chiffrement au moyen d'un mot de passe passé en paramètre avec `-p`. 
