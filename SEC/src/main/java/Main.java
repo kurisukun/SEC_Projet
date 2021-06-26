@@ -12,6 +12,7 @@ import java.util.Scanner;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -40,33 +41,39 @@ public class Main implements Runnable {
   @Option(names = "-d", description = "Decrypt file")
   private boolean decrypt;
 
-  @Option(names = "--help", usageHelp = true, description = "display this help and exit")
+  @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display this help and exit")
   private boolean help;
 
   public void run() {
     // verify that the path was given
-    if (srcPathName == null || dstPathName == null || password == null || configFile == null) {
-      logger.error("file can't be null");
+    if (srcPathName == null || dstPathName == null) {
+      logger.error("The given path for the source or destination file can't be null");
       return;
+    }
+    else if(password == null){
+      logger.error("Password given can't be null");
+    }
+    else if(configFile == null){
+      logger.error("The configuration file can't be null");
     }
 
     // verify yubikey
     YubikeyVerification v = new YubikeyVerification();
     System.out.println("To use ango, you have to authenticate");
-    System.out.println("Please put your finger on your YubiKey to enter your One-time password");
+    System.out.print("Please put your finger on your YubiKey to enter your One-time password: ");
     Scanner scan = new Scanner(System.in);
     String otp = scan.next();
     try {
       if (v.verify(otp)) {
       // verify that the given file to process exists
       if (fileExists(srcPathName)) {
-        logger.error("File doesn't exist" + srcPathName);
+        logger.error("File doesn't exist " + srcPathName);
         return;
       }
 
       // verify that the given config file exists
       if (fileExists(srcPathName)) {
-        logger.error("File doesn't exist" + srcPathName);
+        logger.error("File doesn't exist " + srcPathName);
         return;
       }
 
@@ -114,8 +121,20 @@ public class Main implements Runnable {
   }
 
   public static void main(String[] args) {
-    int exitCode = new CommandLine(new Main()).execute(args);
-    System.exit(exitCode);
+    CommandLine commandLine = new CommandLine(new Main());
+    try{
+      commandLine.parseArgs(args);
+      if(args.length == 0){
+        commandLine.usage(System.out);
+        return;
+      }
+      int exitCode = commandLine.execute(args);
+      System.exit(exitCode);
+    }
+    catch (UnmatchedArgumentException e) {
+      logger.error(e.getMessage());
+      commandLine.usage(System.out);
+    }
   }
 
   private static boolean fileExists(String pathName) {

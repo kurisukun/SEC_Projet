@@ -9,8 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -76,38 +74,7 @@ public class ZipMaker {
     }else{
       throw new FileNotFoundException();
     }
-    logger.info("File " + fileName + "correctly zipped into archive " + zipName);
-  }
-
-  /**
-   * Zip the list of given files
-   * @param fileList the list containing all the filenames
-   * @param zipName the name of the zip archive
-   * @throws IOException
-   */
-  public void zipFiles(String[] fileList, String zipName) throws IOException {
-    List<File> srcFiles = new ArrayList<>();
-    for (String fileName : fileList) {
-      File f = new File(fileName);
-      if (f.exists()) {
-        srcFiles.add(f);
-      }
-    }
-
-    if (!srcFiles.isEmpty()) {
-      FileOutputStream fos = new FileOutputStream(zipName);
-      ZipOutputStream zipOut = new ZipOutputStream(fos);
-      for (File fileToZip : srcFiles) {
-        if (fileToZip.isDirectory()) {
-          zipFolderProcess(fileToZip, fileToZip.getName(), zipOut);
-        } else {
-          zipFileProcess(fileToZip, fileToZip.getName(), zipOut);
-        }
-      }
-      zipOut.close();
-      fos.close();
-    }
-    logger.info("File " + fileList.toString() + "correctly zipped into archive " + zipName);
+    logger.info("File " + fileName + " correctly zipped into archive " + zipName);
   }
 
   /**
@@ -149,7 +116,7 @@ public class ZipMaker {
     zis.closeEntry();
     zis.close();
 
-    logger.info("Archive " + zipName + "correctly unzipped. Content added to folder " + folderName);
+    logger.info("Archive " + zipName + " correctly unzipped. Content added to folder " + folderName);
   }
 
   /**

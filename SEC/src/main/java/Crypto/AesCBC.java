@@ -27,6 +27,9 @@ public class AesCBC {
 
   private static final String algorithm = "AES/CBC/PKCS5Padding";
   private Cipher cipher;
+  final static String TMP_FILENAME_ENCRYPTION = "TMP_FILENAME_ENCRYPTION.zip";
+  final static String TMP_FILENAME_DECRYPTION = "TMP_FILENAME_DECRYPTION";
+
 
   @Getter
   private final IvParameterSpec iv;
@@ -68,13 +71,13 @@ public class AesCBC {
     ZipMaker z = new ZipMaker();
 
     try {
-      z.zip(srcPath, "compressed.zip");
+      z.zip(srcPath, TMP_FILENAME_ENCRYPTION);
     } catch (IOException e) {
       logger.error(e);
     }
-    processData("compressed.zip", dstPath);
+    processData(TMP_FILENAME_ENCRYPTION, dstPath);
     logger.info("Encryption correctly done");
-    if (!new File("compressed.zip").delete()){
+    if (!new File(TMP_FILENAME_ENCRYPTION).delete()){
       logger.warn("The file could not be deleted correctly");
     }
     logger.info("Deletion of temporary file correctly done");
@@ -90,34 +93,20 @@ public class AesCBC {
   public void decrypt(String srcPath, String dstPath)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
     logger.trace("decrypt");
+
     cipher.init(Cipher.DECRYPT_MODE, key, iv);
-    processData(srcPath, "decrypted");
+    processData(srcPath, TMP_FILENAME_DECRYPTION);
     logger.info("Decryption correctly done");
     ZipMaker z = new ZipMaker();
     try {
-      z.unzip("decrypted", dstPath);
+      z.unzip(TMP_FILENAME_DECRYPTION, dstPath);
     } catch (IOException e) {
       logger.error(e);
     }
-    if (!new File(srcPath).delete()){
+    if (!new File(TMP_FILENAME_DECRYPTION).delete()){
       logger.warn("The file could not be deleted correctly");
     }
     logger.info("Deletion of temporary file correctly done");
-  }
-
-  private String[] fileList(String srcPath) throws FileNotFoundException {
-    logger.trace("fileList");
-    File f = new File(srcPath);
-
-    if (f.exists()) {
-      if (f.isFile()) {
-        return new String[]{srcPath};
-      } else if (f.isDirectory()) {
-        return f.list();
-      }
-    }
-
-    throw new FileNotFoundException();
   }
 
   /**
